@@ -17,12 +17,12 @@ import java.util.stream.Collectors;
 
 /**
  * Client for accessing the CurrencyLayer Currency Conversion web service.
- * You must supply your own API access key in the Config class (Config.java).
+ * You must supply your own API access key in a properties file named converter.properties.
  * 
  * The convert( ) method calls the web service to get one or more exchange
- * rates from the service, and return them as a JSON String.  If you don't 
- * provide any parameters, the method queries the web service once for all
- * exchange rates and returns them all (the response data is about 3,250 bytes).
+ * rates from the service, and return them as a JSON String.  If you call convert()
+ * with no parameters, it queries the web service once for ALL exchange
+ * rates and returns them all (the response data is about 3,250 bytes).
  * 
  * The parseRates(data) method parses the string returned by convert() and
  * returns a Map containing all the exchange rates.  The keys are currency codes,
@@ -75,10 +75,8 @@ public class ExchangeRateService {
 		
 		if (DEBUG) System.out.println("Service response:");
 		if (DEBUG) System.out.println(data);
-		// Parse exchange rates from the response.
-		// We are looking for:  "quotes":{"USDTHB":value1,"USDJPY":value2,...}
 		
-		// Get exchange rate for a single currency
+		// Parse the response data for a single currency exchange rate
 		System.out.println("Get exchange rate for a single currency:");
 		System.out.println( "THB = "+parseRate("THB", data) );
 		System.out.println( "JPY = "+parseRate("JPY", data) );
@@ -109,7 +107,7 @@ public class ExchangeRateService {
 		final String CURRENCY_PARAM = "&currencies=%s";
 		
 		String urlstring = String.format(SERVICE_URL, Config.getApiKey() );
-		// If any currencies were specified, then join them together and append
+		// If any currencies are specified, then join them together and append
 		// them to the urlstring as a query parameter.
 		if (currencyCodes.length > 0) {
 			urlstring += String.format(CURRENCY_PARAM, join(currencyCodes));
@@ -154,6 +152,7 @@ public class ExchangeRateService {
 	/**
 	 * Find the exchange rate for USD to the given currencyCode,
 	 * by searching the data string.
+	 * 
 	 * @param currencyCode the currency code to convert to, such as THB.
 	 * @param data exchange rate data.  The expected format is "USDxxx":rate1,"USDyyy":rate2
 	 * @return the exchange rate from USD to the given currency, or 0 if not found (or no numeric value)
