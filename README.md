@@ -47,8 +47,9 @@ For more complex web services a browser plugin like "REST Console" for Chrome is
 
 ## Java URL and HttpURLConnection
 
-This section describes how you to write Java to send a HTTP request
+This section describes how to write Java to send a HTTP request
 and process the reply.
+
 To send an Http request in Java first create a URL:
 ```java
 import java.net.URL;
@@ -64,7 +65,7 @@ Once you have a URL, open a connection to it. This sends the URL to the remote s
     HttpURLConnection conn = (HttpURLConnection)url.openConnection();
 ```
 The `url.openConnection()` method returns a `URLConnection` object.  For HTTP and HTTPS requests, the actual object is `HttpURLConnection`. The HttpURLConnection has extra methods
-such as getting the HTTP response code, so we use a cast.
+such as getting the HTTP response code, so use a cast.
 
 If the request succeeds, it will return Response Code 200 (OK). The
 HttpURLConnection class has named constants for all the response
@@ -72,8 +73,8 @@ codes, so we can write:
 ```java
     int respcode = conn.getResponseCode();
     if (respcode != HttpURLConnection.HTTP_OK) {
-	   System.err.println("Got HTTP Response code: "+respcode);
-	   return;
+        System.err.println("Got HTTP Response code: "+respcode);
+        return;
     }
 ```
 
@@ -81,7 +82,7 @@ After checking the response code, you can open an InputStream to read the data i
 ```java
    InputStream in = conn.getInputStream();
 ```
-For this service, the response is not too long (at most 3,300 bytes) so we can read everything into a String and then close the InputStream:
+The response from this service is not too long (at most 3,300 bytes) so we can read everything into a String and close the InputStream:
 ```java
     InputStream in = conn.getInputStream();
     BufferedReader reader = new BufferedReader( new InputStreamReader( in ) );
@@ -96,17 +97,17 @@ Closing the BufferedReader (or Scanner) also closes the underlying InputStream. 
 
 ## Parsing the Data
 
-The service response is in JSON (Javascript Simple Object Notation) format, a standard and widely used data format.
+The service response is in JSON (JavaScript Object Notation) format, a standard and widely used data format.
 
 For this application the data format is pretty simple, so we can parse it ourselves 
 using the *regular expression* classes included in the Java JDK.
-The exchange rate data we are looking for always has this format:
+The exchange rate data we want always has this format:
 ```
     "USDTHB":31.17037,"USDJPY":104.728996,"USDEUR":0.834580,...
 ```
 *Regular Expressions* are a common syntax for searching data using a pattern.  They are supported by almost all programming languages, text editors, and some Linux shell commands.  A few regular expression tutorials are in the References links below.  
 
-| Pattern to Match    | Regular Expression     |
+| String to Match     | Regular Expression     |
 |:--------------------|:-----------------------|
 | "USDTHB"            | "USD[A-Z]{3}"          |
 | "USDTHB":31.17037   | "USD[A-Z]{3}":\d+\.\d+ |
@@ -193,16 +194,16 @@ api.key = 1234567890ABCDEF
 Verify it by running `Config.java` which will print the API key on the console.
 Then run the `ExchangeRateService` class.
 
-## Don't Put Your API Keys into Version Control
+## Protect Your API Keys
 
 Many web services require an API key or other credential.  This should be kept secret.  So, don't put your keys into version control (git) unless its a private in-house VCS or a private repo from a trusted provider (Github and Bitbucket are OK).
 
 If your API Key (or credentials) are in a properties file, you can avoid
-accidentally committing it to Github by: (a) add the filename to .gitignore,
+accidentally committing it to Github by: (a) add the properties filename to .gitignore,
 (b) put the properties file in a directory **outside** your project directory
-and add the file your application classpath.
+and add the file to your application classpath.
 
-Don't forget about JAR files!  If you build a JAR for your application and
+Don't forget JAR files!  If you build a JAR for your application and
 your API Key is in the JAR file, someone can easily extract it from the JAR file.
 
 ## References
