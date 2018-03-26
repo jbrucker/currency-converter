@@ -1,0 +1,31 @@
+# Ignore properties bundle (private data)
+*/converter.properties
+
+# binaries and temp files
+*.class
+*.swp
+.~*
+bin/
+build/
+out/
+solution/
+
+# Ignore Eclipse project files
+.classpath
+.project
+.settings/
+
+# Ignore Netbeans project files
+nbproject
+nbbuild/
+nbdist/
+nb-configuration.xml
+
+# IntelliJ project files
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# MacOS junk
+.DS_Store
