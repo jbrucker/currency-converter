@@ -2,17 +2,17 @@
 
 This code shows how to call the web service at `http://apilayer.net/live` to get exchange rates.  The 3 bits of Java you need are explained below:
 
-1. How to use URL and HttpURLConnection to send a request and read the reply.
+1. How to use URL and HttpURLConnection to send an HTTP request and read the reply.
 2. How to parse exchange rates from the reply using a *regular expression*.
-3. How to use a Map to store the rates, with currency code as the map key.
+3. How to use a Map to store the exchange rates, with currency code as the map key.
 
 ## What You Need
 
-To use any web service you need to know the URLs for the services
-they provide, any parameters you need to supply, and what the
+To use any web service you need to know the URL for the service,
+any parameters that the service requires, and what information the
 service URL will return.  This is the web service's API.
 
-For the [CurrencyLayer.com](https://currencylayer.com) exchange rate service the API Documentation and examples is at [Documentation](https://currencylayer.com/documentation).
+For the [CurrencyLayer.com](https://currencylayer.com) exchange rate service the API Documentation and examples are at [Documentation](https://currencylayer.com/documentation).
 
 The free "live" quote service has:
 
@@ -20,7 +20,7 @@ The free "live" quote service has:
 * **query params**:
    * `access_key=xxxxxxxxxxxxxxxxx` your access key (required)
    * `currencies=CODE1,CODE2...` optional currency codes. If omitted the service returns all exchange rates from USD.
-   * `source=CUR` (paid account only) the source currency for conversion rates. Default is "USD".
+   * `source=CUR` (paid account only) the source currency code for conversion rates. Default is "USD".
 
 To use this service you need to get an API access key by registering at [https://currencylayer.com/product](https://currencylayer.com/product). Select the free account.
 
@@ -47,11 +47,14 @@ For more complex web services a browser plugin like "REST Console" for Chrome is
 
 ## Java URL and HttpURLConnection
 
+This section describes how you to write Java to send a HTTP request
+and process the reply.
 To send an Http request in Java first create a URL:
 ```java
 import java.net.URL;
-    private static final String MY_API_KEY = "0123456789ABCDEF";
 
+...
+    final String MY_API_KEY = "0123456789ABCDEF";
     URL url = new URL("http://apilayer.net/api/live?access_key="+ MY_API_KEY );
 ```
 This may throw MalformedURLException, so surround the code with try-catch.
@@ -81,30 +84,27 @@ After checking the response code, you can open an InputStream to read the data i
 For this service, the response is not too long (at most 3,300 bytes) so we can read everything into a String and then close the InputStream:
 ```java
     InputStream in = conn.getInputStream();
-    BufferedReader reader = new BufferedReader(
-			                   new InputStreamReader( in ) );
-	StringBuilder sb = new StringBuilder();
-	String line = null;
-	while((line=reader.readLine()) != null) sb.append(line);
-	reader.close();
-	// The response data as a String
-	String data = sb.toString();
+    BufferedReader reader = new BufferedReader( new InputStreamReader( in ) );
+    StringBuilder sb = new StringBuilder();
+    String line = null;
+    while((line=reader.readLine()) != null) sb.append(line);
+    reader.close();
+    // The response data as a String
+    String data = sb.toString();
 ```
 Closing the BufferedReader (or Scanner) also closes the underlying InputStream.  Its good to close input streams in order to free resources.
 
 ## Parsing the Data
 
 The service response is in JSON (Javascript Simple Object Notation) format, a standard and widely used data format.
-There are many libraries to parse JSON objects and even
-convert between Java objects and JSON, such as Gson (fast) and Jackson.
 
-But for this application we can parse it ourselves using the
-*regular expression* classes included in the Java JDK.
-The data we are looking for always has this format:
+For this application the data format is pretty simple, so we can parse it ourselves 
+using the *regular expression* classes included in the Java JDK.
+The exchange rate data we are looking for always has this format:
 ```
-"quotes": { "USDTHB":31.17037,"USDJPY":104.728996,... }
+    "USDTHB":31.17037,"USDJPY":104.728996,"USDEUR":0.834580,...
 ```
-*Regular Expressions* are a common syntax for matching data using a pattern.  They are supported by almost all programming languages, text editors, and some Linux shell commands.  Some tutorials are in the References links below.  
+*Regular Expressions* are a common syntax for searching data using a pattern.  They are supported by almost all programming languages, text editors, and some Linux shell commands.  A few regular expression tutorials are in the References links below.  
 
 | Pattern to Match    | Regular Expression     |
 |:--------------------|:-----------------------|
@@ -122,13 +122,13 @@ The meaning of these are:
 * `\d+` - match one or more digits.
 * `([A-Z]{3})` - match 3 letters A-Z and save the result in a *match group* that can be retrieved later. `(...)` defines a match group inside a pattern.
 
-Suppose the data we want to search is in a String variable named `data`.  To create a regex to match the data use:
+Suppose the data we want to search is in a String variable named `data`.  To create a regex to match exchange rates use:
 ```java
 String regex = "\"USD([A-Z]{3})\":\\s*(\\d*.\\d+)";
 Pattern pattern = Pattern.compile(regex);
 Matcher matcher = pattern.matcher(data);
 ```
-The `Matcher` object is used to match a Pattern to a String (data).
+The `Matcher` object matches a Pattern to a String (data).
 `Matcher` has 3 methods to perform matching: `matches()`, `find()`, and `find(int offset)`.  
 
 We want to find many exchange rates in the data by matching the the pattern many times. So use `matcher.find(offset)`:
@@ -173,7 +173,9 @@ for(String currency: keys) System.out.println(currency);
 
 ## Assemble the Pieces
 
-The above examples show the pieces you need to use the exchange rate service.  By getting all the exchange rates at once and saving them in a Map, you can conserve you quota of API queries.
+The above examples show the pieces you need to use the exchange rate service.  By getting all the exchange rates at once and saving them in a Map, you can conserve you quota of API queries.  
+
+Even if you *don't* query all the exchange rates at once, you should *still* use a Map to remember the currencies you have already queried and avoid redundantly querying for the same exchange rate.
 
 The `ExchangeRateService` class demonstrates the pieces used together.
 
@@ -182,11 +184,10 @@ The `ExchangeRateService` class demonstrates the pieces used together.
 Sample code to download and print all exchange rates is in the class `ExchangeRateService`.
 
 Before you can run it, you need to put your CurrencyLayer.com API Key in a
-properties file named `converter.properties` on the build path.
-Create a properties file `src/converter.properties` containing your API Key:
+properties file named `converter.properties` on the Java classpath.  Create a properties file `src/converter.properties` containing your API Key:
 ```
 # Your API Key.
-# Avoid commiting this to a public repository.
+# Avoid committing this to a public repository.
 api.key = 1234567890ABCDEF
 ```
 Verify it by running `Config.java` which will print the API key on the console.
@@ -197,8 +198,8 @@ Then run the `ExchangeRateService` class.
 Many web services require an API key or other credential.  This should be kept secret.  So, don't put your keys into version control (git) unless its a private in-house VCS or a private repo from a trusted provider (Github and Bitbucket are OK).
 
 If your API Key (or credentials) are in a properties file, you can avoid
-accidentally committing it to Github by: a) add the filename to .gitignore,
-b) put the properties file in a directory **outside** your project directory
+accidentally committing it to Github by: (a) add the filename to .gitignore,
+(b) put the properties file in a directory **outside** your project directory
 and add the file your application classpath.
 
 Don't forget about JAR files!  If you build a JAR for your application and
