@@ -1,12 +1,12 @@
 ## Using a Web Service for Currency Exchange Rates
 
-This code shows how to call the web service at `http://apilayer.net/live` to get exchange rates.  The 3 bits of Java you need are explained below:
+This code shows how to call the web service at `http://apilayer.net/live` to get exchange rates.  Three pieces of Java you need are explained below:
 
-1. How to use URL and HttpURLConnection to send an HTTP request and read the reply.
+1. How to send an HTTP request and read the reply using URL and HttpURLConnection.
 2. How to parse exchange rates from the reply using a *regular expression*.
 3. How to use a Map to store the exchange rates, with currency code as the map key.
 
-## What You Need
+## Using a Web Service
 
 To use any web service you need to know the URL for the service,
 any parameters that the service requires, and what information the
@@ -21,17 +21,18 @@ The free "live" quote service has:
    * `access_key=xxxxxxxxxxxxxxxxx` your access key (required)
    * `currencies=CODE1,CODE2...` optional currency codes. If omitted the service returns all exchange rates from USD.
    * `source=CUR` (paid account only) the source currency code for conversion rates. Default is "USD".
+ * **Response:** the response is a string containing exchange rates, in JSON format (examples below).
 
 To use this service you need to get an API access key by registering at [https://currencylayer.com/product](https://currencylayer.com/product). Select the free account.
 
 ## Sample Request and Reply
 
-To check our access key and see what the service really returns, send
+To check our access key and see what the service reply looks like, send
 a sample query using a web browser (with your real access_key, of course):
 ```
 http://apilayer.net/api/live?access_key=1234567890abcdef
 ```
-The reply should look like:
+The reply should look like (but all on one line):
 ```
 {"success":true,"terms":"https:\/\/currencylayer.com\/terms",
  "privacy":"https:\/\/currencylayer.com\/privacy","timestamp":1521947957,
@@ -43,12 +44,14 @@ The reply should look like:
 }
 ```
 
-For more complex web services a browser plugin like "REST Console" for Chrome is useful.
+The format is JavaScript Object Notation (JSON), which is a collection of key-value pairs.  The keys are always Strings and surrounded by "quotes". The values can be anything, including a nested JSON object delimited by {...}.
+
+For more complex web services a browser plugin like "REST Console" for Chrome is useful for exploring the service.
 
 ## Java URL and HttpURLConnection
 
-This section describes how to write Java to send a HTTP request
-and process the reply.
+This section describes how to use Java to send an HTTP request
+and process the response.
 
 To send an Http request in Java first create a URL:
 ```java
@@ -60,7 +63,7 @@ import java.net.URL;
 ```
 This may throw MalformedURLException, so surround the code with try-catch.
 
-Once you have a URL, open a connection to it. This sends the URL to the remote site and gets the response.  
+Once you have a URL, open a connection to it. This sends the request to the remote server and gets the response.  
 ```java
     HttpURLConnection conn = (HttpURLConnection)url.openConnection();
 ```
@@ -68,7 +71,7 @@ The `url.openConnection()` method returns a `URLConnection` object.  For HTTP an
 such as getting the HTTP response code, so use a cast.
 
 If the request succeeds, it will return Response Code 200 (OK). The
-HttpURLConnection class has named constants for all the response
+HttpURLConnection class has named constants for all the HTTP response
 codes, so we can write:
 ```java
     int respcode = conn.getResponseCode();
@@ -99,29 +102,30 @@ Closing the BufferedReader (or Scanner) also closes the underlying InputStream. 
 
 The service response is in JSON (JavaScript Object Notation) format, a standard and widely used data format.
 
-For this application the data format is pretty simple, so we can parse it ourselves 
-using the *regular expression* classes included in the Java JDK.
+For this application the data format is pretty simple, so we can parse it
+ourselves using the *regular expression* classes included in the Java JDK.
 The exchange rate data we want always has this format:
 ```
     "USDTHB":31.17037,"USDJPY":104.728996,"USDEUR":0.834580,...
 ```
 *Regular Expressions* are a common syntax for searching data using a pattern.  They are supported by almost all programming languages, text editors, and some Linux shell commands.  A few regular expression tutorials are in the References links below.  
 
-| String to Match     | Regular Expression     |
-|:--------------------|:-----------------------|
-| "USDTHB"            | "USD[A-Z]{3}"          |
-| "USDTHB":31.17037   | "USD[A-Z]{3}":\d+\.\d+ |
-| "USDJPY":  104.7289 | "USD[A-Z]{3}":\s*\d+\.\d+ |
-| with match groups   | "USD([A-Z]{3})":\s*(\d+.\d+) |
+| String to Match     | Regular Expression     | Meaning             |
+|:--------------------|:-----------------------|:--------------------|
+| USDTHB              | USD[A-Z]{3}            | Match USD followed by 3 letters. |
+| 31.17037            | \d+\.\d+               | Match one or more digits (\d)), a period, and more digits |
+| "USDTHB":31.17037   | "USD[A-Z]{3}":\d+\.\d+ | Combine above 2 patterns. |
+| "USDJPY":  104.7289 | "USD[A-Z]{3}":\s*\d+\.\d+ | Allow spaces (\s*) in the string |
+| with match groups   | "USD([A-Z]{3})":\s*(\d+.\d+) | Save whatever matches inside (...) |
 
-The meaning of these are:
+The meaning of the expressions are:
 * `USD` - match the string "USD" (literal match)
 * `[A-Z]` - match any letter A to Z
 * `[A-Z]{3}` - match any 3 letters A to Z, such as THB
 * `\s*` - match zero or more whitespace characters (\s=whitespace)
 * `\d`  - match any digit. Same as writing `[0-9]`.
 * `\d+` - match one or more digits.
-* `([A-Z]{3})` - match 3 letters A-Z and save the result in a *match group* that can be retrieved later. `(...)` defines a match group inside a pattern.
+* `([A-Z]{3})` - match 3 letters A-Z and save the result in a *match group* that can be retrieved later. `(..)` defines a match group inside a pattern.
 
 Suppose the data we want to search is in a String variable named `data`.  To create a regex to match exchange rates use:
 ```java
@@ -140,7 +144,7 @@ while( matcher.find(offset) ) {
     String currency = matcher.group(1);
     String value = matcher.group(2);
     System.out.printf("Found USD->%s = %s\n", currency, value);
-    // move offset to the end of previous match
+    // move offset to the end of the previous match
     offset = matcher.end();
 }
 ```
@@ -157,19 +161,20 @@ rates.put("JPY", 104.728996);
 
 // get a value for a particular key
 double value = rates.get("THB");
-// get a value and specify a default value in case key is not in the map
+// get a value and specify a default value in case the key is not in the map
 double value = rates.getOrDefault("THB", 0.0);
 ```
 You can add a Map to the example pattern matching code (above) to
-save all the currency exchange rates in a map, instead of printing them.
+save all the currency exchange rates in a Map, instead of printing them.
 If you call `map.put(key,value)` for a key that is already in the map,
 the new value replaces the old one.
 
 The JDK has several Map classes including HashMap and TreeMap.  A TreeMap always returns its keys in sorted order, which is useful if you want to get all the keys and display them:
 ```java
+// Get all the keys in the map
 Set<String> keys = rates.keySet();
 System.out.println("Currencies are:");
-for(String currency: keys) System.out.println(currency);
+for (String currency: keys) System.out.println(currency);
 ```
 
 ## Assemble the Pieces
@@ -179,6 +184,19 @@ The above examples show the pieces you need to use the exchange rate service.  B
 Even if you *don't* query all the exchange rates at once, you should *still* use a Map to remember the currencies you have already queried and avoid redundantly querying for the same exchange rate.
 
 The `ExchangeRateService` class demonstrates the pieces used together.
+
+## Separate Your Code (the *Single Responsibility Principle*)
+
+You want your application to be flexible, easy to test, and easy to modify.  So, you should isolate your Exchange Rate code in a class by itself, and design methods to provide the info your application needs.
+
+For example:
+
+| ExchangeRateService |
+|---------------------|
+| getCurrencyCodes():  String[] <br/> getExchangeRate(fromCurr, toCurr):  double <br/> getExchangeRates():  Map |
+
+
+Your code will be cleaner, easier to develop and test, and you can easily switch to a different exchange rate service or use the Exchange Rate service class in a different application.
 
 ## Running The Sample Code
 
@@ -208,11 +226,12 @@ your API Key is in the JAR file, someone can easily extract it from the JAR file
 
 ## References
 
-* [CurrencyLayer.com Documentation](https://currencylayer.com/documentation) how to use their service.
+* [CurrencyLayer.com Documentation](https://currencylayer.com/documentation) how to use their web service.
 * [Reading and Writing a URLConnection](https://docs.oracle.com/javase/tutorial/networking/urls/readingWriting.html) - Oracle Java Tutorial.
 * [Java HttpURLConnection Example](https://www.journaldev.com/7148/java-httpurlconnection-example-java-http-request-get-post) at JournalDev.com shows how to get the HTTP Response Code, set HTTP headers, and more.
 * Another [Java HttpURLConnection Example](https://alvinalexander.com/blog/post/java/how-open-url-read-contents-httpurl-connection-java) with more detail and explanation.  The author has written several books about programming.
-* [Java API for JSON](http://www.oracle.com/technetwork/articles/java/json-1973242.html) Oracle library to parse Json.
+* Parsing JSON. In this code we used regex. You can also convert JSON to/from Java using the popular [GSON](https://github.com/google/gson/) or [Jackson](https://github.com/FasterXML/jackson) libraries.
 * Regular Expression Tutorials:
 [Vogella](http://www.vogella.com/tutorials/JavaRegularExpressions/article.html), [BeginnersBook](https://beginnersbook.com/2014/08/java-regex-tutorial/), and [JavaTPoint](https://www.javatpoint.com/java-regex).
+* [Regular Expression Tool](https://regexr.com) at [https://regexr.com](https://regexr.com) learn, explore, and test regex -- visually shows what's going on. Many examples, too.
 * One SKE graduate told me that the most useful thing he learned from OOP was *regular expressions*.

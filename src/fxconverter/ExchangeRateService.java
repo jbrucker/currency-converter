@@ -47,9 +47,9 @@ public class ExchangeRateService {
 	static final String SERVICE_URL = "http://apilayer.net/api/live?access_key=%s";
 	// Debugging mode. Prints results of pattern matches.
 	static final boolean DEBUG = false;
-	// Perform a live query or use test data read from a file?
+	// Perform a live query, or use saved query result read from a file?
 	// Specify the filename in the main method.
-	static final boolean USE_SAVED_QUERY = false;
+	static final boolean USE_SAVED_QUERY = true;
 	
 	
 	/**
@@ -62,9 +62,10 @@ public class ExchangeRateService {
 		
 		String data;
 		if (USE_SAVED_QUERY) {
-			System.out.println("Using saved query result");
-			// This is a saved response, to reduce API calls.
-			data = readFromFile("exchange-rate-2018-03-26.txt");
+			// This is a saved query response, to reduce API calls.
+			String filename = "exchange-rate-2018-03-26.txt";
+			System.out.println("Using saved query result in file "+filename);
+			data = readFromFile(filename);
 		}
 		else {
 			// Call the web service. Response is a JSON string containing exchange rates.
@@ -84,6 +85,11 @@ public class ExchangeRateService {
 		// Get all exchange rates in the response data
 		System.out.println("All exchange rates from the service:");
 		Map<String,Double> rates = parseRates(data);
+		printExchangeRates(rates);
+	}
+	
+	/** Print all the exchange rates contained in a map. */
+	private static void printExchangeRates(Map<String,Double> rates) {
 		for(String currency: rates.keySet()) {
 			System.out.printf("USD-%s = %.6f\n", currency, rates.get(currency));
 		}
