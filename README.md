@@ -219,7 +219,7 @@ Your API key or other credentials should be kept secret.  So, don't put your key
 If your API Key (or credentials) are in a properties file, you can avoid
 accidentally committing it to Github by: (a) add the properties filename to .gitignore,
 (b) put the properties file in a directory **outside** your project directory
-and add the file to your application classpath.
+and add the directory to your application classpath.
 
 The same advice applies to JAR files.  If you build a JAR for your application and
 your API Key is in the JAR file, someone can easily extract it from the JAR file.
