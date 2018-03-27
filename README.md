@@ -114,9 +114,9 @@ The exchange rate data we want always has this format:
 |:--------------------|:-----------------------|:--------------------|
 | USDTHB              | USD[A-Z]{3}            | Match USD followed by 3 letters. |
 | 31.17037            | \d+\\.\d+               | Match one or more digits (\d), a period, and more digits |
-| "USDTHB":31.17037   | "USD[A-Z]{3}":\d+\.\d+ | Combine above 2 patterns. |
-| "USDJPY":  104.7289 | "USD[A-Z]{3}":\s*\d+\.\d+ | Allow spaces (\s*) in the string |
-| with match groups   | "USD([A-Z]{3})":\s*(\d+.\d+) | Save whatever matches inside (...) |
+| "USDTHB":31.17037   | "USD[A-Z]{3}":\d+\\.\d+ | Combine above 2 patterns. |
+| "USDJPY":  104.7289 | "USD[A-Z]{3}":\s*\d+\\.\d+ | Allow spaces (\s*) after the colon |
+| add match groups   | "USD([A-Z]{3})":\s*(\d+\\.\d+) | Save whatever matches inside (...) |
 
 The meaning of the expressions are:
 * `USD` - match the string "USD" (literal match)
