@@ -49,7 +49,7 @@ public class ExchangeRateService {
 	static final boolean DEBUG = false;
 	// Perform a live query, or use saved query result read from a file?
 	// Specify the filename in the main method.
-	static final boolean USE_SAVED_QUERY = true;
+	static final boolean USE_SAVED_QUERY = false;
 	
 	
 	/**

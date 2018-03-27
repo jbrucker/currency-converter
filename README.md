@@ -81,7 +81,7 @@ codes, so we can write:
     }
 ```
 
-After checking the response code, you can open an InputStream to read the data in the response body, which contains the info we want.
+After checking the response code, open an InputStream to read the data in the response body, which contains the info we want.
 ```java
    InputStream in = conn.getInputStream();
 ```
@@ -103,7 +103,7 @@ Closing the BufferedReader (or Scanner) also closes the underlying InputStream. 
 The service response is in JSON (JavaScript Object Notation) format, a standard and widely used data format.
 
 For this application the data format is pretty simple, so we can parse it
-ourselves using the *regular expression* classes included in the Java JDK.
+ourselves using the *regular expression* classes included in the JDK.
 The exchange rate data we want always has this format:
 ```
     "USDTHB":31.17037,"USDJPY":104.728996,"USDEUR":0.834580,...
@@ -113,7 +113,7 @@ The exchange rate data we want always has this format:
 | String to Match     | Regular Expression     | Meaning             |
 |:--------------------|:-----------------------|:--------------------|
 | USDTHB              | USD[A-Z]{3}            | Match USD followed by 3 letters. |
-| 31.17037            | \d+\.\d+               | Match one or more digits (\d)), a period, and more digits |
+| 31.17037            | \d+\\.\d+               | Match one or more digits (\d), a period, and more digits |
 | "USDTHB":31.17037   | "USD[A-Z]{3}":\d+\.\d+ | Combine above 2 patterns. |
 | "USDJPY":  104.7289 | "USD[A-Z]{3}":\s*\d+\.\d+ | Allow spaces (\s*) in the string |
 | with match groups   | "USD([A-Z]{3})":\s*(\d+.\d+) | Save whatever matches inside (...) |
@@ -148,18 +148,18 @@ while( matcher.find(offset) ) {
     offset = matcher.end();
 }
 ```
-After a Matcher finds a pattern, we call `matcher.group(n)` to get a "match group" from the text just matched. Use `.group(1)` for the first match group (the currency code).  `matcher.group(0)` returns *everything* that matched the pattern.
+After the Matcher finds a pattern, we call `matcher.group(n)` to get a "match group" from the text just matched. Use `.group(1)` for the first match group (the currency code).  `matcher.group(0)` returns *everything* that matched the pattern.
 
 ## Save Exchange Rates using a Map
 
 A `Map` is a mapping of keys to values. The keys and values can be any data type, so in Java a `Map` has 2 type parameters: `Map<Key,Value>`.
 ```java
 Map<String,Double> rates = new TreeMap<>();
-// add data to the map
+// add exchange rates to the map
 rates.put("THB", 31.17037);
 rates.put("JPY", 104.728996);
 
-// get a value for a particular key
+// get the value for a particular key
 double value = rates.get("THB");
 // get a value and specify a default value in case the key is not in the map
 double value = rates.getOrDefault("THB", 0.0);
@@ -193,7 +193,7 @@ For example:
 
 | ExchangeRateService |
 |---------------------|
-| getCurrencyCodes():  String[] <br/> getExchangeRate(fromCurr, toCurr):  double <br/> getExchangeRates():  Map |
+| getCurrencyCodes():  String[ ] <br/> getExchangeRate(fromCurr, toCurr):  double <br/> getExchangeRates():  Map |
 
 
 Your code will be cleaner, easier to develop and test, and you can easily switch to a different exchange rate service or use the Exchange Rate service class in a different application.
@@ -214,14 +214,14 @@ Then run the `ExchangeRateService` class.
 
 ## Protect Your API Keys
 
-Many web services require an API key or other credential.  This should be kept secret.  So, don't put your keys into version control (git) unless its a private in-house VCS or a private repo from a trusted provider (Github and Bitbucket are OK).
+Your API key or other credentials should be kept secret.  So, don't put your keys into version control (git) unless its a private in-house VCS or a private repo from a trusted provider (Github and Bitbucket are OK).
 
 If your API Key (or credentials) are in a properties file, you can avoid
 accidentally committing it to Github by: (a) add the properties filename to .gitignore,
 (b) put the properties file in a directory **outside** your project directory
 and add the file to your application classpath.
 
-Don't forget JAR files!  If you build a JAR for your application and
+The same advice applies to JAR files.  If you build a JAR for your application and
 your API Key is in the JAR file, someone can easily extract it from the JAR file.
 
 ## References
