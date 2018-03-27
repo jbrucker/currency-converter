@@ -67,8 +67,8 @@ Once you have a URL, open a connection to it. This sends the request to the remo
 ```java
     HttpURLConnection conn = (HttpURLConnection)url.openConnection();
 ```
-The `url.openConnection()` method returns a `URLConnection` object.  For HTTP and HTTPS requests, the actual object is `HttpURLConnection`. The HttpURLConnection has extra methods
-such as getting the HTTP response code, so use a cast.
+The `url.openConnection()` method returns a `URLConnection` object.  For HTTP/HTTPS requests, the actual object is `HttpURLConnection`. 
+The HttpURLConnection has extra methods such as getting the HTTP response code, so use a cast.
 
 If the request succeeds, it will return Response Code 200 (OK). The
 HttpURLConnection class has named constants for all the HTTP response
@@ -106,7 +106,7 @@ For this application the data format is pretty simple, so we can parse it
 ourselves using the *regular expression* classes included in the JDK.
 The exchange rate data we want always has this format:
 ```
-    "USDTHB":31.17037,"USDJPY":104.728996,"USDEUR":0.834580,...
+    "USDTHB":31.17037,"USDJPY":104.728996,"USDEUR":0.807902,...
 ```
 *Regular Expressions* are a common syntax for searching data using a pattern.  They are supported by almost all programming languages, text editors, and some Linux shell commands.  A few regular expression tutorials are in the References links below.  
 
@@ -136,7 +136,7 @@ Matcher matcher = pattern.matcher(data);
 The `Matcher` object matches a Pattern to a String (data).
 `Matcher` has 3 methods to perform matching: `matches()`, `find()`, and `find(int offset)`.  
 
-We want to find many exchange rates in the data by matching the the pattern many times. So use `matcher.find(offset)`:
+We want to find all exchange rates in the data by searching for the pattern in the data many times. So use `matcher.find(offset)`:
 
 ```java
 int offset = 0;
