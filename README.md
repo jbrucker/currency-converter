@@ -21,7 +21,7 @@ The free "live" quote service has:
    * `access_key=xxxxxxxxxxxxxxxxx` your access key (required)
    * `currencies=CODE1,CODE2...` optional currency codes. If omitted the service returns all exchange rates from USD.
    * `source=CUR` (paid account only) the source currency code for conversion rates. Default is "USD".
- * **Response:** the response is a string containing exchange rates, in JSON format (examples below).
+ * **Response:** a string containing exchange rates, in JSON format (examples below).
 
 To use this service you need to get an API access key by registering at [https://currencylayer.com/product](https://currencylayer.com/product). Select the free account.
 
