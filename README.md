@@ -1,6 +1,6 @@
 ## Using a Web Service for Currency Exchange Rates
 
-This code shows how to call the web service at `http://apilayer.net/live` to get exchange rates.  Three pieces of Java you need are explained below:
+This code shows how to get currency exchange rates using the web service at `http://apilayer.net/live`.  Three pieces of Java you need are explained below:
 
 1. How to send an HTTP request and read the reply using URL and HttpURLConnection.
 2. How to parse exchange rates from the reply using a *regular expression*.
@@ -100,19 +100,19 @@ Closing the BufferedReader (or Scanner) also closes the underlying InputStream. 
 
 ## Parsing the Data
 
-The service response is in JSON (JavaScript Object Notation) format, a standard and widely used data format.
+The service response is in JSON (JavaScript Object Notation) format, a standard and widely used data format. There are libraries to convert Json to/from Java objects, such as GSON and Jackson.
 
-For this application the data format is pretty simple, so we can parse it
+For this application the data format is quite simple, so we can parse it
 ourselves using the *regular expression* classes included in the JDK.
 The exchange rate data we want always has this format:
 ```
     "USDTHB":31.17037,"USDJPY":104.728996,"USDEUR":0.807902,...
 ```
-*Regular Expressions* are a common syntax for searching data using a pattern.  They are supported by almost all programming languages, text editors, and some Linux shell commands.  A few regular expression tutorials are in the References links below.  
+*Regular Expressions* are a common syntax for searching data using a pattern.  They are supported by almost all programming languages, text editors, and some Linux shell commands.  Links to regular expression tutorials are given in the References below.  
 
 | String to Match     | Regular Expression     | Meaning             |
 |:--------------------|:-----------------------|:--------------------|
-| USDTHB              | USD[A-Z]{3}            | Match USD followed by 3 letters. |
+| USDTHB              | USD[A-Z]{3}            | Match USD followed by any 3 letters. |
 | 31.17037            | \d+\\.\d+               | Match one or more digits (\d), a period, and more digits |
 | "USDTHB":31.17037   | "USD[A-Z]{3}":\d+\\.\d+ | Combine above 2 patterns. |
 | "USDJPY":  104.7289 | "USD[A-Z]{3}":\s*\d+\\.\d+ | Allow spaces (\s*) after the colon |
@@ -159,10 +159,10 @@ Map<String,Double> rates = new TreeMap<>();
 rates.put("THB", 31.17037);
 rates.put("JPY", 104.728996);
 
-// get the value for a particular key
+// get the value for the key "THB"
 double value = rates.get("THB");
 // get a value and specify a default value in case the key is not in the map
-double value = rates.getOrDefault("THB", 0.0);
+double value2 = rates.getOrDefault("EUR", 0.0);
 ```
 You can add a Map to the example pattern matching code (above) to
 save all the currency exchange rates in a Map, instead of printing them.
