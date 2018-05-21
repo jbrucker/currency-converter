@@ -34,13 +34,14 @@ http://apilayer.net/api/live?access_key=1234567890abcdef
 ```
 The reply should look like (but all on one line):
 ```
-{"success":true,"terms":"https:\/\/currencylayer.com\/terms",
- "privacy":"https:\/\/currencylayer.com\/privacy","timestamp":1521947957,
+{"success":true,"terms":"https://currencylayer.com/terms",
+ "privacy":"https://currencylayer.com/privacy",
+ "timestamp":1521947957,
  "source":"USD",
  "quotes":{"USDAED":3.672504,"USDAFN":68.930404,"USDALL":104.800003,
- "USDAMD":479.670013,"USDANG":1.780403,"USDAOA":214.358994,
- ... (more exchange rates)
- "USDZMK":9001.203593,"USDZMW":9.430363,"USDZWL":322.355011}
+           "USDAMD":479.670013,"USDANG":1.780403,"USDAOA":214.358994,
+           ... (more exchange rates)
+           "USDZMK":9001.203593,"USDZMW":9.430363,"USDZWL":322.355011}
 }
 ```
 
@@ -100,7 +101,7 @@ Closing the BufferedReader (or Scanner) also closes the underlying InputStream. 
 
 ## Parsing the Data
 
-The service response is in JSON (JavaScript Object Notation) format, a standard and widely used data format. There are libraries to convert Json to/from Java objects, such as GSON and Jackson.
+The service response is in JSON (JavaScript Object Notation) format, a standard and widely used data format. 
 
 For this application the data format is quite simple, so we can parse it
 ourselves using the *regular expression* classes included in the JDK.
@@ -116,7 +117,7 @@ The exchange rate data we want always has this format:
 | 31.17037            | \d+\\.\d+               | Match one or more digits (\d), a period, and more digits |
 | "USDTHB":31.17037   | "USD[A-Z]{3}":\d+\\.\d+ | Combine above 2 patterns. |
 | "USDJPY":  104.7289 | "USD[A-Z]{3}":\s*\d+\\.\d+ | Allow spaces (\s*) after the colon |
-| add match groups   | "USD([A-Z]{3})":\s*(\d+\\.\d+) | Save whatever matches inside (...) |
+| add match groups   | "USD([A-Z]{3})":\s*(\d+\\.\d+) | Save whatever matches inside () as a *match group* |
 
 The meaning of the expressions are:
 * `USD` - match the string "USD" (literal match)
@@ -152,7 +153,9 @@ After the Matcher finds a pattern, we call `matcher.group(n)` to get a "match gr
 
 ## Save Exchange Rates using a Map
 
-A `Map` is a mapping of keys to values. The keys and values can be any data type, so in Java a `Map` has 2 type parameters: `Map<Key,Value>`.
+We want to save the exchange rates so we don't need to repeatedly query the web service.
+
+A `Map` is a mapping of keys to values. In Java, a Map has two type parameters: `Map<Key,Value>`, where the type parameters specify the actual class of the keys and values.  For exchange rates the keys are `String` and values are `Double`.
 ```java
 Map<String,Double> rates = new TreeMap<>();
 // add exchange rates to the map
@@ -164,12 +167,13 @@ double value = rates.get("THB");
 // get a value and specify a default value in case the key is not in the map
 double value2 = rates.getOrDefault("EUR", 0.0);
 ```
+
 You can add a Map to the example pattern matching code (above) to
 save all the currency exchange rates in a Map, instead of printing them.
 If you call `map.put(key,value)` for a key that is already in the map,
 the new value replaces the old one.
 
-The JDK has several Map classes including HashMap and TreeMap.  A TreeMap always returns its keys in sorted order, which is useful if you want to get all the keys and display them:
+The JDK has several Map classes including HashMap and TreeMap.  A TreeMap always returns its keys in sorted order, which is useful if you want to get the keys and display them:
 ```java
 // Get all the keys in the map
 Set<String> keys = rates.keySet();
